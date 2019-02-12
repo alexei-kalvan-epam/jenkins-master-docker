@@ -1,0 +1,26 @@
+version: '3.0'
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+     - "80:80"
+    volumes:
+     - ./nginx/jenkins.conf:/etc/nginx/conf.d/default.conf
+    links:
+     - jenkins
+  jenkins:
+    container_name: jenkins
+    image: jenkins:master
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+     - "50000:50000"
+    environment:
+     - NGINX_PORT=80
+     - JAVA_OPTS=-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=300 -Dmail.smtp.starttls.enable=true -Djava.awt.headless=true -Dhudson.model.DirectoryBrowserSupport.CSP="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src * 'unsafe-inline' data:;"
+    volumes:
+     - ./jenkins_home:/var/jenkins_home
